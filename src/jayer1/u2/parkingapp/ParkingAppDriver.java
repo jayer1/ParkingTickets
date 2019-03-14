@@ -1,236 +1,298 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package jayer1.u2.parkingapp;
 
+import java.io.EOFException;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.time.Duration;
-import java.time.LocalTime;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import java.util.Scanner;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import static jayer1.u2.parkingapp.CheckIn.checkinTime;
-import static jayer1.u2.parkingapp.CheckOut.checkoutTime;
 
-/**
- *
- * @author ayerj
- */
 public class ParkingAppDriver {
 
-    /**
-     * @param args the command line arguments
-     */
     public static void main(String[] args) throws FileNotFoundException, IOException, ClassNotFoundException {
         // TODO code application logic here
-        Scanner keyboard = new Scanner(System.in);
-        //ParkingAppDriver parker = new ParkingAppDriver();
-        //String x = "";
-        //while (!x.equals("no")) {
-        // random hour
-
+        //Scanner keyboard = new Scanner(System.in);
         int vehicleID = 0;
         int earlyTime = 0;
         int lateTime;
         int elapsedHours;
         double amount;
-        //String keepGoing;
-        String end = "n";
-        while (end.equals("n")) {
-
-            double nbr = (double) Math.random();
-            System.out.println("Number " + nbr);
-
-            if (nbr >= .75) {
-                System.out.println("Display check IN prompt");
-            } else {
-                System.out.println("Display check OUT prompt");
-            }
-            System.out.println("end now?");
-            end = keyboard.nextLine();
-
-        }
+        int amountCheckedOut = 0;
+        int lastID = 0;
+        DecimalFormat df = new DecimalFormat("#.00");
+        Ticket ticket = null;
+        int randomPick;
+        int randomPickFromArrayList;
+        double nbr;
 
         List<Ticket> myTicketList = new ArrayList();
-        Ticket ticket;
-        //Ticket ticket;
-        //keepGoing = "y";
-        //while ("y".equals(keepGoing)) {
+        // Call FileRead method in FileStorage to read the file into the arrayList
+        FileStorage fileReader = new FileStorage();
+        myTicketList = fileReader.FileRead(ticket);
+
+        // DATA CLEANUP
+        // Set all records to CheckOutHour = 0
+        /*for (int i = 0; i < myTicketList.size(); i++) {
+         myTicketList.get(i).setCheckOutHour(0);
+         myTicketList.get(i).setAmount(0.0);
+         }*/
+        //Delete records from arraylist and save changes
+        //System.out.println("SIZE " + myTicketList.size());
+        //myTicketList.remove(myTicketList.size() - 1);
+        // arraylist for collecting which slot in arraylist is not checked out
+        ArrayList<Integer> checkedOutVehicles = new ArrayList<Integer>();
+        amountCheckedOut = getCheckedOutVehicles(checkedOutVehicles, myTicketList);
+        //System.out.println("amountCheckedOut: " + amountCheckedOut);
+
+        //Display current list
+        //displayAllTickets(myTicketList);
         while (true) {
 
-            /*mainMenu();
+            nbr = (double) Math.random();
+            //System.out.println("Number " + nbr);  was in
 
-             int mainMenuSelection = keyboard.nextInt();
+            if (amountCheckedOut == 0 || nbr > 0.75) { // if there are existing tickets still checked out and random # is <= 0.75
+                //if (amountCheckedOut <= 3) { // if there are existing tickets still checked out
 
-             if (mainMenuSelection == 1) {
-             vehicleID += 1;
-             earlyTime = checkinTime();
-             System.out.println("You checked in at " + earlyTime);
-             ticket = new Ticket(vehicleID, earlyTime, 0, 0.0, false);
+                // Display main menu and get input, redisplay menu of input is not 1 or 3
+                int mainMenuSelection = 0;
 
-             //ticket = new Ticket(vehicleID, earlyTime, 0, 0.0, false);
-             myTicketList.add(ticket);
+                do {
+                    String message = "\n\nBest Value Parking Garage\n"
+                            + "\n=========================\n"
+                            + "\n1 – Check/In\n\n3 – Close Garage\n\n=> ";
+                    mainMenuSelection = getInt(message);
 
-             //System.out.println(" vehicle id " + myTicketList.get(0).getVehicleID() + " checked in " + myTicketList.get(0).getCheckInHour() + " checked out " + myTicketList.get(0).getCheckOutHour() + " amount charged " + myTicketList.get(0).getAmount());
-             } else if (mainMenuSelection == 3) {
-             summarizeCloseGarage(myTicketList);
-             //writeFile(myTicketList);
-             break;
-             }*/
-            double nbr = (double) Math.random();
-            System.out.println("Number " + nbr);
+                } while (mainMenuSelection != 1 && mainMenuSelection != 3);
 
-            //if (nbr >= .75) {
-            System.out.println("Display check IN prompt");
+                // 1 = check in, 3 = close garage
+                if (mainMenuSelection == 1) { // CHECK IN
+                    //System.out.println("list size is " + myTicketList.size()); was in
+                    //System.out.println("_+_+_+_+_+_+_+_+_"); was in
+                    lastID = myTicketList.get(myTicketList.size() - 1).getVehicleID();
+                    //System.out.println("Last id is " + lastID); was in
+                    vehicleID = lastID + 1;
+                    //vehicleID += 1;
 
-            mainMenu();
+                    // Run the CheckIn class methods
+                    CheckIn checkin = new CheckIn();
+                    earlyTime = checkin.setCheckinTime();
+                    String message = "Vehicle " + vehicleID + " checks in";
+                    printMessage(message);
+                    ticket = new Ticket(vehicleID, earlyTime, 0, 0.0, false);
 
-            int mainMenuSelection = keyboard.nextInt();
+                    // Add ticket object to arraylist
+                    myTicketList.add(ticket);
 
-            if (mainMenuSelection == 1) {
-                vehicleID += 1;
-                earlyTime = checkinTime();
-                System.out.println("You checked in at " + earlyTime);
-                ticket = new Ticket(vehicleID, earlyTime, 0, 0.0, false);
+                    amountCheckedOut = getCheckedOutVehicles(checkedOutVehicles, myTicketList);
 
-                //ticket = new Ticket(vehicleID, earlyTime, 0, 0.0, false);
-                myTicketList.add(ticket);
+                } else if (mainMenuSelection == 3) {  // CLOSE GARAGE
+                    summarizeCloseGarage(myTicketList);
 
-                //System.out.println(" vehicle id " + myTicketList.get(0).getVehicleID() + " checked in " + myTicketList.get(0).getCheckInHour() + " checked out " + myTicketList.get(0).getCheckOutHour() + " amount charged " + myTicketList.get(0).getAmount());
-            } else if (mainMenuSelection == 3) {
-                summarizeCloseGarage(myTicketList);
-                //writeFile(myTicketList);
-                break;
+                    // Stop the program once you close the display the summary
+                    break;
+                }
+
+            } else if (nbr <= 0.75) { //else from if amountcheckedout < 3
+
+                // Display main menu and get input, redisplay menu of input is not 1 or 2
+                int submitMenuSelection = 1;
+
+                do {
+
+                    String message = "\n\nBest Value Parking Garage\n"
+                            + "\n=========================\n"
+                            + "\n1 – Check/Out\n\n2 – Lost Ticket\n\n=> ";
+                    submitMenuSelection = getInt(message);
+
+                } while (submitMenuSelection != 1 && submitMenuSelection != 2);
+
+                if (submitMenuSelection == 1) { // CHECK OUT
+
+                    randomPickFromArrayList = 0;
+                    randomPick = 0;
+
+                    randomPickFromArrayList = getRandomPick(randomPickFromArrayList, amountCheckedOut, randomPick, checkedOutVehicles, myTicketList);
+
+                    /*int number = 0;
+                     amountCheckedOut = getCheckedOutVehicles(checkedOutVehicles, myTicketList);
+                     if (amountCheckedOut == 1) { // If there's only one ticket that's not checked out...
+                     number = checkedOutVehicles.get(0);
+                     } else { // otherwise get the list of tickets not checked out and pick a random one
+                     randomPick = pickRandomCheckOutVehicle(checkedOutVehicles, myTicketList);
+                     System.out.println("Random pick: " + randomPick);
+                     number = randomPick;
+                     }*/
+                    // Get the current ticket in the ArrayList and get its checkin time
+                    ticket = myTicketList.get(randomPickFromArrayList);
+                    earlyTime = ticket.getCheckInHour(); //added this line
+
+                    //Run the CheckOut class methods
+                    CheckOut checkout = new CheckOut();
+                    lateTime = checkout.setCheckOutTime(); //FROM CheckOut class
+                    elapsedHours = checkout.setCalcDuration(earlyTime, lateTime);//FROM CheckOut class
+                    amount = checkout.setCalcAmount(elapsedHours); //FROM CheckOut class
+
+                    //Apply results from CheckOut class to current ticket
+                    ticket.setCheckOutHour(lateTime);
+                    ticket.setAmount(amount);
+
+                    // Display the CheckOut receipt
+                    //System.out.println("You checked out at " + lateTime);  was in
+                    checkOutDisplay(elapsedHours, randomPickFromArrayList, myTicketList);
+
+                    amountCheckedOut = getCheckedOutVehicles(checkedOutVehicles, myTicketList);
+
+                } else if (submitMenuSelection == 2) { // LOST TICKET
+                    randomPickFromArrayList = 0;
+                    randomPick = 0;
+
+                    randomPickFromArrayList = getRandomPick(randomPickFromArrayList, amountCheckedOut, randomPick, checkedOutVehicles, myTicketList);
+
+                    /*amountCheckedOut = getCheckedOutVehicles(checkedOutVehicles, myTicketList);
+                     if (amountCheckedOut == 1) { // If there's only one ticket that's not checked out...
+                     randomPickFromArrayList = checkedOutVehicles.get(0);
+                     } else { // otherwise get the list of tickets not checked out and pick a random one
+                     randomPick = pickRandomCheckOutVehicle(checkedOutVehicles, myTicketList);
+                     System.out.println("Random pick: " + randomPick);
+                     //System.out.println("Which one do you want");
+                     randomPickFromArrayList = randomPick;
+                     //int number = keyboard.nextInt();
+                     }*/
+                    ticket = myTicketList.get(randomPickFromArrayList);
+                    ticket.setLostTicket(true);
+
+                    // Grab lost ticket final amount from CheckOut class
+                    CheckOut lostTicketAmount = new CheckOut();
+                    amount = lostTicketAmount.getLostAmount();
+
+                    // Display lost ticket output
+                    lostTicketDisplay(df, amount, randomPickFromArrayList, myTicketList);
+
+                    // Update the checkedoutvehicles list
+                    amountCheckedOut = getCheckedOutVehicles(checkedOutVehicles, myTicketList);
+                }
             }
-
-            //} else {
-            System.out.println("Display check OUT prompt");
-
-            submitTicketMenu();
-
-            int submitMenuSelection = keyboard.nextInt();
-
-            if (submitMenuSelection == 1) {
-                System.out.println("Which one do you want");
-                int number = keyboard.nextInt();
-                ticket = myTicketList.get(number);
-                lateTime = checkoutTime();
-                ticket.setCheckOutHour(lateTime);
-                elapsedHours = calcDuration(earlyTime, lateTime);
-
-                //System.out.println("BROKEN OUT \n" + earlyTime + "\n" + lateTime + "\n" + elapsedHours);
-                amount = calcAmount(elapsedHours);
-                ticket.setAmount(amount);
-                checkOutDisplay(number, myTicketList);
-
-            } else if (submitMenuSelection == 2) {
-                System.out.println("Which one do you want");
-                int number = keyboard.nextInt();
-                ticket = myTicketList.get(number);
-                ticket.setLostTicket(true);
-                amount = 25.00;
-                lostTicketDisplay(amount);
-
-            }
-            //}
-
-            //System.out.print("Keep going? (y/n): ");
-            //keyboard.nextLine();
-            //keepGoing = keyboard.nextLine();
-            //System.out.println("keepGoing equals " + keepGoing);
         }
+        // Write the arraylist back to the file
+        FileStorage fileWriter = new FileStorage();
+        fileWriter.FileWrite(myTicketList);
 
-        String fileName = "tickets.bin";
-        ObjectInputStream is = new ObjectInputStream(new FileInputStream(fileName));
-        Object obj = null;
-        while ((obj = is.readObject()) != null) {
-            ticket = (Ticket) obj;
-            myTicketList.add(ticket);
+    }
+
+    public static int getRandomPick(int randomPickFromArrayList, int amountCheckedOut, int randomPick, List<Integer> checkedOutVehicles, List<Ticket> myTicketList) {
+        amountCheckedOut = getCheckedOutVehicles(checkedOutVehicles, myTicketList);
+        if (amountCheckedOut == 1) { // If there's only one ticket that's not checked out...
+            randomPickFromArrayList = checkedOutVehicles.get(0);
+        } else { // otherwise get the list of tickets not checked out and pick a random one
+            randomPick = pickRandomCheckOutVehicle(checkedOutVehicles, myTicketList);
+            //System.out.println("Random pick: " + randomPick); was in
+            //System.out.println("Which one do you want");
+            randomPickFromArrayList = randomPick;
+            //int number = keyboard.nextInt();
         }
-        System.out.println("first object is " + myTicketList.get(0).getVehicleID());
-        is.close();
+        return randomPickFromArrayList;
     }
 
-    public static void mainMenu() {
-        System.out.println("\nBest Value Parking Garage");
-        System.out.println("\n=========================");
-        System.out.println("\n1 – Check/In");
-        System.out.println("\n3 – Close Garage");
-        System.out.print("\n=> ");
+    private static int getInt(String message) {
+        int response = 0;
+        Scanner keyboard = new Scanner(System.in);
+        System.out.print(message);
+        response = keyboard.nextInt();
+        keyboard.nextLine();
+        return response;
     }
 
-    public static void submitTicketMenu() {
-        System.out.println("\nBest Value Parking Garage");
-        System.out.println("\n=========================");
-        System.out.println("\n1 – Check/Out");
-        System.out.println("\n2 – Lost Ticket");
-        System.out.print("\n=> ");
-    }
-
-    public static void checkOutDisplay(int nbr, List<Ticket> myTicketList) {
+    public static void checkOutDisplay(int elapsedHours, int nbr, List<Ticket> myTicketList) {
         int start = myTicketList.get(nbr).getCheckInHour();
         int end = myTicketList.get(nbr).getCheckOutHour();
-        int duration = calcDuration(start, end);
-        System.out.println("\nBest Value Parking Garage");
-        System.out.println("\n=========================");
-        System.out.println("\nReceipt for vehicle ID " + myTicketList.get(nbr).getVehicleID());
-        System.out.println("\n" + duration + " hours parked " + myTicketList.get(nbr).getCheckInHour() + " am " + myTicketList.get(nbr).getCheckOutHour() + " pm");
-        System.out.print("\n=> ");
+        DecimalFormat df = new DecimalFormat("#.00");
+        String message = "\n\nBest Value Parking Garage\n\n=========================\n\nReceipt for vehicle ID "
+                + myTicketList.get(nbr).getVehicleID() + "\n\n" + elapsedHours + " hours parked "
+                + myTicketList.get(nbr).getCheckInHour() + " am - " + myTicketList.get(nbr).getCheckOutHour()
+                + " pm" + "\n\n$" + df.format(myTicketList.get(nbr).getAmount());
+        printMessage(message);
     }
 
-    public static double calcAmount(long elapsedHours) {
-        // The fee charged for parked vehicles is based on a $5.00
-        // minimum fee to park for up to three hours.
-        // After that there is an additional $1.00 per hour charge
-        // for each hour or part of an hour parked. The maximum charge
-        // for any given 24-hour period is $15.00. Assume that no vehicle parks for longer than 24 hours.  Lost tickets have a $25.00 fee.
+    public static void lostTicketDisplay(DecimalFormat df, double amount, int nbr, List<Ticket> myTicketList) {
+        String message = ("\nBest Value Parking Garage\n\n=========================\nReceipt for vehicle id " + myTicketList.get(nbr).getVehicleID()
+                + "\n\nLost Ticket\n\n$" + df.format(amount) + "\n");
+        printMessage(message);
+    }
 
-        double amount = 0;
-        if (elapsedHours <= 3) {
-            amount = 5.00;
-        } else if (elapsedHours > 3 && elapsedHours <= 24) {
-            amount = 5 + (elapsedHours - 3);
-            if (amount > 15) {
-                amount = 15;
+    public static int getCheckedOutVehicles(List<Integer> checkedOutVehicles, List<Ticket> myTicketList) {
+        // arraylist for collecting which slot in arraylist is not checked out
+        checkedOutVehicles.clear();
+
+        // If getCheckOutHour() = 0, add index to checkedOutVehicles arraylist
+        for (int i = 0; i < myTicketList.size(); i++) {
+            if (myTicketList.get(i).getCheckOutHour() == 0 && myTicketList.get(i).getLostTicket() == false) {
+                checkedOutVehicles.add(i);
             }
         }
-        return amount;
 
+        // Display the arraylist of Cars
+        //System.out.println("Display which slots in the main arraylist have not been checked out");  was in
+        //System.out.println("0 = VehicleID 1, etc.");  was in
+        for (int i = 0; i < checkedOutVehicles.size(); i++) {
+            //System.out.print(checkedOutVehicles.get(i) + " ");  was in
+        }
+        //System.out.println("");  was in
+        int amountNotCheckedOut = checkedOutVehicles.size();
+        //System.out.println("Amount of not checked out vehicles " + amountNotCheckedOut);  was in
+        return amountNotCheckedOut;
     }
 
-    public static int calcDuration(int early, int late) {
+    public static int pickRandomCheckOutVehicle(List<Integer> checkedOutVehicles, List<Ticket> myTicketList) {
+        // arraylist for collecting which slot in arraylist is not checked out
+        //ArrayList<Integer> checkedOutVehicles = new ArrayList<Integer>();
+        checkedOutVehicles.clear();
+        for (int i = 0; i < myTicketList.size(); i++) {
+            // Lists all tickets pulled into the Arraylist from the file
+            //System.out.println(myTicketList.get(i).getVehicleID() + " check in hour " + myTicketList.get(i).getCheckInHour() + " check out hour " + myTicketList.get(i).getCheckOutHour() + " lost ticket? " + myTicketList.get(i).getLostTicket());
+            // If getCheckOutHour() = 0, add index to checkedOutVehicles arraylist
+            if (myTicketList.get(i).getCheckOutHour() == 0 && myTicketList.get(i).getLostTicket() == false) {
+                checkedOutVehicles.add(i);
+            }
+        }
 
-        int duration;
-        return duration = 12 - early + late;
+        // Display the arraylist of open tickets
+        //System.out.println("Display which slots in the main arraylist have not been checked out"); was in
+        //System.out.println("0 = VehicleID 1, etc."); was in
+        for (int i = 0; i < checkedOutVehicles.size(); i++) {
+            //System.out.print(checkedOutVehicles.get(i) + " "); was in
+        }
+        //System.out.println(""); was in
 
-    }
-
-    public static void lostTicketDisplay(double amount) {
-        System.out.println("\nBest Value Parking Garage");
-        System.out.println("\n=========================");
-        System.out.println("Receipt for vehicle");
-        System.out.println("");
-        System.out.println("Lost Ticket");
-        System.out.print("\n$" + amount);
+        //System.out.println("Amount of not checked out vehicles " + amountCheckedOut);
+        // Randomly grab a slot in the list of checked out vehicles
+        Random r = new Random();
+        int amountCheckedOut = checkedOutVehicles.size() - 1; // One less than getCheckedOutVehicles
+        int slot = r.nextInt((amountCheckedOut - 0) + 1) + 0;
+        //System.out.println("So the program picked a random number between 0 and " + amountCheckedOut + " = slot " + slot); was in
+        int chosenCheckedOutVehicle = checkedOutVehicles.get(slot);
+        return chosenCheckedOutVehicle;
     }
 
     public static void summarizeCloseGarage(List<Ticket> myTicketList) throws IOException, ClassNotFoundException {
+        DecimalFormat df = new DecimalFormat("#.00");
         double amount = 0;
         int lostCount = 0;
         double sumLostCount = 0;
         double total = 0;
         int countCheckIns = 0;
+
+        //Display current list
+        //displayAllTickets(myTicketList);
         for (int i = 0; i < myTicketList.size(); i++) {
             amount += myTicketList.get(i).getAmount();
             if (myTicketList.get(i).getLostTicket() == true) {
@@ -243,39 +305,22 @@ public class ParkingAppDriver {
         }
         sumLostCount = lostCount * 25;
         total = amount + sumLostCount;
-        System.out.println("\nBest Value Parking Garage");
-        System.out.println("\n=========================");
-        System.out.println("\nActivity to Date");
-        System.out.println("\n$" + amount + " was collected from " + countCheckIns + " Check Ins");
-        System.out.println("$" + sumLostCount + " was collected from " + lostCount + " Lost Tickets");
-        System.out.println("\n$" + total + " was collected overall");
+        String message = "\nBest Value Parking Garage\n=========================\n\nActivity to Date\n\n$" + df.format(amount) + " was collected from " + countCheckIns + " Check Ins\n\n$" + df.format(sumLostCount) + " was collected from " + lostCount + " Lost Tickets\n\n$" + df.format(total) + " was collected overall\n";
 
-        for (int nbr = 0; nbr < myTicketList.size(); nbr++) {
-            System.out.println("vehicle " + myTicketList.get(nbr).getVehicleID() + " checkin " + myTicketList.get(nbr).getCheckInHour() + " am " + myTicketList.get(nbr).getCheckOutHour());
-        }
-        //System.out.println("Saving to file...");
-        //writeFile(myTicketList);
-
-        String fileName = "tickets.bin";
-        try {
-            ObjectOutputStream os = new ObjectOutputStream(new FileOutputStream(fileName));
-            // Write the objects
-            for (Ticket tics : myTicketList) {
-                os.writeObject(tics);
-            }
-
-            os.close();
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
+        printMessage(message);
     }
 
-    private static void writeFile(List<Ticket> myTicketList) {
-        TicketWriter writer = new TicketWriter();
-        writer.writeTicketFile("tickets.txt", myTicketList);
+    public static void printMessage(String message) {
+        System.out.println(message);
+    }
+
+    public static void displayAllTickets(List<Ticket> myTicketList) {
+        String message = "";
+        for (int i = 0; i < myTicketList.size(); i++) {
+            message += "vehicle " + myTicketList.get(i).getVehicleID() + " checkin " + myTicketList.get(i).getCheckInHour()
+                    + " am checkout " + myTicketList.get(i).getCheckOutHour() + " amount collected at checkout " + myTicketList.get(i).getAmount() + " Lost Ticket? " + myTicketList.get(i).getLostTicket() + "\n";
+        }
+        System.out.println("Here's the list of tickets:\n" + message);
     }
 
 }

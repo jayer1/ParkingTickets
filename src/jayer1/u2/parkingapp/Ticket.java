@@ -1,17 +1,8 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package jayer1.u2.parkingapp;
 
 import java.io.Serializable;
 import java.util.ArrayList;
 
-/**
- *
- * @author ayerj
- */
 public class Ticket implements Serializable {
 
     private int vehicleID;
@@ -19,6 +10,18 @@ public class Ticket implements Serializable {
     private int checkOutHour;
     private double amount;
     private boolean lostTicket;
+
+    public Ticket(int vehicleID, int checkInHour, int checkOutHour, double amount, boolean lostTicket) {
+        this.vehicleID = vehicleID;
+        this.checkInHour = checkInHour;
+        this.checkOutHour = checkOutHour;
+        this.amount = amount;
+        this.lostTicket = lostTicket;
+    }
+
+    public Ticket() {
+
+    }
 
     public int getVehicleID() {
         return vehicleID;
@@ -60,15 +63,20 @@ public class Ticket implements Serializable {
         this.lostTicket = lostTicket;
     }
 
-    public Ticket(int vehicleID, int checkInHour, int checkOutHour, double amount, boolean lostTicket) {
-        this.vehicleID = vehicleID;
-        this.checkInHour = checkInHour;
-        this.checkOutHour = checkOutHour;
-        this.amount = amount;
-        this.lostTicket = lostTicket;
-    }
-
-    public Ticket() {
+    public double calcAmount(int elapsedHours) { // SWITCHED FROM LONG ELAPSEDHOURS
+        double amount = 0;
+        if (elapsedHours <= 3) {
+            amount = 5.00;
+        } else if (elapsedHours > 3 && elapsedHours <= 24) {
+            amount = 5 + (elapsedHours - 3);
+            //System.out.println("Elapsed hours = " + elapsedHours);
+            //System.out.println("amount = 5 + " + (elapsedHours - 3));
+            //System.out.println("Amount = " + amount);
+            if (amount > 15) {
+                amount = 15;
+            }
+        }
+        return amount;
 
     }
 }
