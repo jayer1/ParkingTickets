@@ -46,15 +46,16 @@ public class ParkingAppDriver {
          myTicketList.get(i).setAmount(0.0);
          }*/
         //Delete records from arraylist and save changes
-        //System.out.println("SIZE " + myTicketList.size());
-        //myTicketList.remove(myTicketList.size() - 1);
+        System.out.println("SIZE " + myTicketList.size());
+        myTicketList.remove(myTicketList.size() - 1);
+        System.out.println("SIZE " + myTicketList.size());
         // arraylist for collecting which slot in arraylist is not checked out
         ArrayList<Integer> checkedOutVehicles = new ArrayList<Integer>();
         amountCheckedOut = getCheckedOutVehicles(checkedOutVehicles, myTicketList);
         //System.out.println("amountCheckedOut: " + amountCheckedOut);
 
         //Display current list
-        //displayAllTickets(myTicketList);
+        displayAllTickets(myTicketList);
         while (true) {
 
             nbr = (double) Math.random();
@@ -69,10 +70,10 @@ public class ParkingAppDriver {
                 do {
                     String message = "\n\nBest Value Parking Garage\n"
                             + "\n=========================\n"
-                            + "\n1 – Check/In\n\n3 – Close Garage\n\n=> ";
+                            + "\n1 – Check/In\n\n2 – Special Event\n\n3 – Close Garage\n\n=> ";
                     mainMenuSelection = getInt(message);
 
-                } while (mainMenuSelection != 1 && mainMenuSelection != 3);
+                } while (mainMenuSelection != 1 && mainMenuSelection != 2 && mainMenuSelection != 3);
 
                 // 1 = check in, 3 = close garage
                 if (mainMenuSelection == 1) { // CHECK IN
@@ -95,6 +96,14 @@ public class ParkingAppDriver {
 
                     amountCheckedOut = getCheckedOutVehicles(checkedOutVehicles, myTicketList);
 
+                    
+                } else if (mainMenuSelection == 2){
+                    lastID = myTicketList.get(myTicketList.size() - 1).getVehicleID();
+                    vehicleID = lastID + 1;
+                   
+                   
+                    amountCheckedOut = getCheckedOutVehicles(checkedOutVehicles, myTicketList);
+                    
                 } else if (mainMenuSelection == 3) {  // CLOSE GARAGE
                     summarizeCloseGarage(myTicketList);
 
@@ -140,8 +149,12 @@ public class ParkingAppDriver {
                     CheckOut checkout = new CheckOut();
                     lateTime = checkout.setCheckOutTime(); //FROM CheckOut class
                     elapsedHours = checkout.setCalcDuration(earlyTime, lateTime);//FROM CheckOut class
-                    amount = checkout.setCalcAmount(elapsedHours); //FROM CheckOut class
-
+                    System.out.println("Elapsed hours are: " + elapsedHours);
+                    //amount = checkout.setCalcAmount(elapsedHours); //FROM CheckOut class
+                    CalculationType calcType = new CalculationType();
+                    calcType.setCalculationType(new MinMax(elapsedHours));
+                    amount = calcType.getAmount();
+                    System.out.println("amount from driver = " + amount);
                     //Apply results from CheckOut class to current ticket
                     ticket.setCheckOutHour(lateTime);
                     ticket.setAmount(amount);
@@ -226,6 +239,12 @@ public class ParkingAppDriver {
     public static void lostTicketDisplay(DecimalFormat df, double amount, int nbr, List<Ticket> myTicketList) {
         String message = ("\nBest Value Parking Garage\n\n=========================\nReceipt for vehicle id " + myTicketList.get(nbr).getVehicleID()
                 + "\n\nLost Ticket\n\n$" + df.format(amount) + "\n");
+        printMessage(message);
+    }
+    
+    public static void specialEventDisplay(DecimalFormat df, double amount, int nbr, List<Ticket> myTicketList) {
+        String message = ("\nBest Value Parking Garage\n\n=========================\nReceipt for vehicle id " + myTicketList.get(nbr).getVehicleID()
+                + "\n\nSpecial Event\n\n$" + df.format(amount) + "\n");
         printMessage(message);
     }
 
@@ -321,6 +340,29 @@ public class ParkingAppDriver {
                     + " am checkout " + myTicketList.get(i).getCheckOutHour() + " amount collected at checkout " + myTicketList.get(i).getAmount() + " Lost Ticket? " + myTicketList.get(i).getLostTicket() + "\n";
         }
         System.out.println("Here's the list of tickets:\n" + message);
+    }
+    
+    public void SelectOption(int elapsedHours) {
+    
+    CalculationType calcType = new CalculationType();
+    
+    String selection = "";
+    
+    
+    switch (selection) {
+                case "NormalCheckout":
+                    calcType.setCalculationType(new MinMax(elapsedHours));
+                    break;
+                case "LostTicket":
+                    calcType.setCalculationType(new SpecialEvent());
+                    break;
+                case "SpecialRate":
+                    calcType.setCalculationType(new LostTicket());
+                    break;
+                default:
+                    System.out.println("Goodbye");
+                    System.exit(0);
+            }
     }
 
 }
