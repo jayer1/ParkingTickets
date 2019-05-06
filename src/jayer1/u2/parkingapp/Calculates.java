@@ -1,5 +1,10 @@
 package jayer1.u2.parkingapp;
 
+/**
+* This is the Calculator interface used in conjunction with the below classes as a strategy design pattern
+* It works with the CalculationType class to determine with 
+*
+*/
 public interface Calculates {
     
     double calculate();
@@ -21,7 +26,7 @@ class MinMax implements Calculates{
     @Override
     public double calculate(){
         double amount = 0;
-        System.out.println("Were in the strategy!!!");
+        
         if (elapsedHours <= 3) {
             amount = 5;
             //System.out.println("Amount is at minimum fee = " + amount);
@@ -34,7 +39,7 @@ class MinMax implements Calculates{
                 amount = 15;
             }
         }
-        System.out.println("amount from minmax: " + amount);
+        
         return amount;
 
         }

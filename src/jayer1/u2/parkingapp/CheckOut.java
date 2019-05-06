@@ -2,6 +2,9 @@ package jayer1.u2.parkingapp;
 
 import java.util.Random;
 
+/**
+* This class handles the CheckOut functionality of setting a check out time and calculating the difference between the check in and check out time
+*/
 public class CheckOut {
 
     private static final int LOW = 1;
@@ -21,18 +24,36 @@ public class CheckOut {
         //HIGH = this.HIGH;
     }
 
+    /**
+    * This sets a check out time by using a random number
+    * @return resultHour - the check out time which will be stored checkOutHour in the Ticket object
+    */
     public int setCheckOutTime() {
 
         Random hour = new Random();
         int resultHour = hour.nextInt(HIGH - LOW) + LOW;
         return resultHour;
     }
+    
+    /**
+    * This calculates the duration in time between when the ticket was checked in (from CheckIn class) and when it was checked out (from setCheckOutTime())
+    * @param early - when the ticket was checked in
+    * @param late - when the ticket was checked out
+    * @return duration - the duration in time between when the ticket was checked in and when it was checked out
+    */
+    public int setCalcDuration(int early, int late) {
 
-    public double getLostAmount() {
-        return LOST_AMOUNT;
+        //System.out.println("early " + early);
+        //System.out.println("late " + late);
+        return duration = TWELVE - early + late;
+
     }
 
-    public double setCalcAmount(int elapsedHours) {
+    /*public double getLostAmount() {
+        return LOST_AMOUNT;
+    }*/
+
+    /*public double setCalcAmount(int elapsedHours) {
         // The fee charged for parked vehicles is based on a $5.00 minimum fee to park for up to three hours. (MIN_FEE)
         // After that there is an additional $1.00 per hour charge for each hour or part of an hour parked. (HOURLY_CHARGE)
         //The maximum charge for any given 24-hour period is $15.00. (MAX_FEE)
@@ -52,15 +73,10 @@ public class CheckOut {
                 amount = MAX_FEE;
             }
         }
+        System.out.println("WHYWHYWHYWHY!!!!");
         return amount;
-    }
+    }*/
 
-    public int setCalcDuration(int early, int late) {
-
-        //System.out.println("early " + early);
-        //System.out.println("late " + late);
-        return duration = TWELVE - early + late;
-
-    }
+    
 
 }
