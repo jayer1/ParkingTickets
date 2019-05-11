@@ -58,7 +58,7 @@ public class ParkingAppDriver {
         amountCheckedOut = getCheckedOutVehicles(checkedOutVehicles, myTicketList);
 
         //Display current list
-        displayAllTickets(myTicketList);
+        //displayAllTickets(myTicketList);
         while (true) {
             nbr = (double) Math.random();
             //System.out.println("Number " + nbr);  was in
@@ -83,8 +83,8 @@ public class ParkingAppDriver {
                     // Run the CheckIn class methods
                     CheckIn checkin = new CheckIn();
                     earlyTime = checkin.setCheckinTime();
-                    String message = "Vehicle " + vehicleID + " checks in";
-                    printMessage(message);
+                    //String message = "Vehicle " + vehicleID + " checks in";
+                    //printMessage(message);
                     ticket = new Ticket(vehicleID, earlyTime, 0, 0.0, false, false);
 
                     // Add ticket object to arraylist
@@ -104,12 +104,9 @@ public class ParkingAppDriver {
                     
                     //FACTORY WAY
                     FeeStrategyFactory feeFactory = new FeeStrategyFactoryImpl();
-                    CalculationType calcType = new CalculationType();
                     FeeStrategy myFee = feeFactory.make("SpecialEvent");
-                     // SET SPECIAL EVENT AMOUNT WITH STRATEGY DESIGN PATTERN
-                    //CalculationType calcType = new CalculationType();
-                    //calcType.setCalculationType(new SpecialEvent());
-                    amount = calcType.getAmount();
+                    amount = myFee.getAmount();
+
                     
                     // Display Special Event output
                     specialEventDisplay(df, amount, lastID, myTicketList);
@@ -153,13 +150,13 @@ public class ParkingAppDriver {
                     CheckOut checkout = new CheckOut();
                     lateTime = checkout.setCheckOutTime(); //FROM CheckOut class
                     elapsedHours = checkout.setCalcDuration(earlyTime, lateTime);//FROM CheckOut class
-                    System.out.println("Elapsed hours are: " + elapsedHours);
-                    //amount = checkout.setCalcAmount(elapsedHours); //FROM CheckOut class
+
                     
-                    // SET NORMAL TICKET AMOUNT WITH STRATEGY DESIGN PATTERN
-                    CalculationType calcType = new CalculationType();
-                    calcType.setCalculationType(new MinMax(elapsedHours));
-                    amount = calcType.getAmount();
+                    //FACTORY WAY
+                    FeeStrategyFactory feeFactory = new FeeStrategyFactoryImpl();
+                    FeeStrategy myFee = feeFactory.make("MinMax");
+                    amount = myFee.getAmount();
+
                     
                     //Apply results from CheckOut class to current ticket
                     ticket.setCheckOutHour(lateTime);
@@ -180,10 +177,11 @@ public class ParkingAppDriver {
                     ticket = myTicketList.get(randomPickFromArrayList);
                     ticket.setLostTicket(true);
 
-                    // SET SPECIAL EVENT AMOUNT WITH STRATEGY DESIGN PATTERN
-                    CalculationType calcType = new CalculationType();
-                    calcType.setCalculationType(new LostTicket());
-                    amount = calcType.getAmount();
+                    //FACTORY WAY
+                    FeeStrategyFactory feeFactory = new FeeStrategyFactoryImpl();
+                    FeeStrategy myFee = feeFactory.make("LostTicket");
+                    amount = myFee.getAmount();
+
 
                     // Display lost ticket output
                     lostTicketDisplay(df, amount, randomPickFromArrayList, myTicketList);
@@ -245,7 +243,7 @@ public class ParkingAppDriver {
         int end = myTicketList.get(nbr).getCheckOutHour();
         DecimalFormat df = new DecimalFormat("#.00");
         String message = "\n\nBest Value Parking Garage\n\n=========================\n\nReceipt for vehicle ID "
-                + myTicketList.get(nbr).getVehicleID() + "\n\n" + elapsedHours + " hours parked "
+                + myTicketList.get(nbr).getVehicleID() + "\n\n\n" + elapsedHours + " hours parked "
                 + myTicketList.get(nbr).getCheckInHour() + " am - " + myTicketList.get(nbr).getCheckOutHour()
                 + " pm" + "\n\n$" + df.format(myTicketList.get(nbr).getAmount());
         printMessage(message);
@@ -259,8 +257,8 @@ public class ParkingAppDriver {
     * @param myTicketList - main ArrayList of all tickets
     */
     public static void lostTicketDisplay(DecimalFormat df, double amount, int nbr, List<Ticket> myTicketList) {
-        String message = ("\nBest Value Parking Garage\n\n=========================\nReceipt for vehicle id " + myTicketList.get(nbr).getVehicleID()
-                + "\n\nLost Ticket\n\n$" + df.format(amount) + "\n");
+        String message = ("\nBest Value Parking Garage\n\n=========================\n\nReceipt for vehicle id " + myTicketList.get(nbr).getVehicleID()
+                + "\n\n\nLost Ticket\n\n$" + df.format(amount) + "\n");
         printMessage(message);
     }
     
@@ -272,25 +270,23 @@ public class ParkingAppDriver {
     * @param myTicketList - main ArrayList of all tickets
     */
     public static void specialEventDisplay(DecimalFormat df, double amount, int nbr, List<Ticket> myTicketList) {
-        String message = ("\nBest Value Parking Garage\n\n=========================\nReceipt for vehicle id " + myTicketList.get(nbr).getVehicleID()
-                + "\n\nSpecial Event\n\n$" + df.format(amount) + "\n");
+        String message = ("\nBest Value Parking Garage\n\n=========================\n\nReceipt for vehicle id " + myTicketList.get(nbr).getVehicleID()
+                + "\n\n\nSpecial Event\n\n$" + df.format(amount) + "\n");
         printMessage(message);
     }
 
     /**
     * This cycles through the myTicketList ArrayList. For each element, if the CheckOutHour is 0 and the LostTicket and SpecialEvent booleans are false, it adds that element to a new list
     * Then it gets the size of the new list and returns that size
-    * @param df - number format
-    * @param amount - standard amount charged for lost ticket
-    * @param nbr - number indicated the correct element in the ArrayList
+    * @param checkedOutVehicles - constructed list of tickets that can still be acted on
     * @param myTicketList - main ArrayList of all tickets
     * @return amountNotCheckedOut - number of elements in the new list (See description about)
     */
     public static int getCheckedOutVehicles(List<Integer> checkedOutVehicles, List<Ticket> myTicketList) {
-        // arraylist for collecting which slot in arraylist is not checked out
+        // ArrayList for collecting which slot in ArrayList is not checked out
         checkedOutVehicles.clear();
 
-        // If getCheckOutHour() = 0, add index to checkedOutVehicles arraylist
+        // If getCheckOutHour() = 0 lostticket is false and specialevent is false, add index to checkedOutVehicles arraylist
         for (int i = 0; i < myTicketList.size(); i++) {
             if (myTicketList.get(i).getCheckOutHour() == 0 && myTicketList.get(i).getLostTicket() == false && myTicketList.get(i).getSpecialEvent()== false) {
                 checkedOutVehicles.add(i);
@@ -298,10 +294,10 @@ public class ParkingAppDriver {
         }
 
         // Display the arraylist of Cars
-        System.out.println("Checked out cars ");
-        for (int i = 0; i < checkedOutVehicles.size(); i++) {
-            System.out.print(checkedOutVehicles.get(i) + " "); 
-        }
+        //System.out.println("Checked out cars ");
+        //for (int i = 0; i < checkedOutVehicles.size(); i++) {
+            //System.out.print(checkedOutVehicles.get(i) + " ");
+        //}
         int amountNotCheckedOut = checkedOutVehicles.size();
         //System.out.println("Amount of not checked out vehicles " + amountNotCheckedOut);  was in
         return amountNotCheckedOut;
@@ -310,10 +306,8 @@ public class ParkingAppDriver {
     /**
     * This cycles through the myTicketList ArrayList. For each element, if the CheckOutHour is 0 and the LostTicket and SpecialEvent booleans are false, it adds that element to a new list
     * Then it gets the size of the new list and returns that size
-    * @param df - number format
-    * @param amount - standard amount charged for lost ticket
-    * @param nbr - number indicated the correct element in the ArrayList
     * @param myTicketList - main ArrayList of all tickets
+     *@param checkedOutVehicles - constructed list of tickets that can still be acted on
     * @return amountNotCheckedOut - number of elements in the new list (See description above)
     */
     public static int pickRandomCheckOutVehicle(List<Integer> checkedOutVehicles, List<Ticket> myTicketList) {
@@ -363,16 +357,26 @@ public class ParkingAppDriver {
             }
 
         }
-        sumLostCount = lostCount * 25;
-        sumSpecialCount = specialCount * 20;
+
+        // Grabbing the factory/strategy values for lost ticket and special event fees
+        FeeStrategyFactory feeFactory = new FeeStrategyFactoryImpl();
+        FeeStrategy myLostFee = feeFactory.make("LostTicket");
+        double lostMultiplier = myLostFee.getAmount();
+
+        FeeStrategyFactory feeFactory2 = new FeeStrategyFactoryImpl();
+        FeeStrategy mySpecialEventFee = feeFactory2.make("SpecialEvent");
+        double SEMultiplier = mySpecialEventFee.getAmount();
+
+        sumLostCount = lostCount * lostMultiplier;
+        sumSpecialCount = specialCount * SEMultiplier;
         total = amount + sumLostCount + sumSpecialCount;
-        String message = "\nBest Value Parking Garage\n=========================\n\nActivity to Date\n\n$" + df.format(amount) + " was collected from " + countCheckIns + " Check Ins\n\n$" + df.format(sumLostCount) + " was collected from " + lostCount + " Lost Tickets\n\n$"  + df.format(sumSpecialCount) + " was collected from " + specialCount + " Special Events\n\n$" + df.format(total) + " was collected overall\n";
+        String message = "\nBest Value Parking Garage\n\n=========================\n\nActivity to Date\n\n\n$" + df.format(amount) + " was collected from " + countCheckIns + " Check Ins\n\n$" + df.format(sumLostCount) + " was collected from " + lostCount + " Lost Tickets\n\n$"  + df.format(sumSpecialCount) + " was collected from " + specialCount + " Special Events\n\n$" + df.format(total) + " was collected overall\n";
 
         printMessage(message);
     }
 
     /**
-    * This basically puts the prints a message to the console. When other methods want to print to the console, they pass their own message and this prints it out
+    * This basically prints a message to the console. When other methods want to print to the console, they pass their own message and this prints it out
     * @param message - main ArrayList of all tickets
     */
     public static void printMessage(String message) {

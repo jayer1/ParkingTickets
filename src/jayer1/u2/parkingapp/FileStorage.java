@@ -10,6 +10,9 @@ import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * This reads the file into an ArrayList and writes the ArrayList back to the file
+ */
 public class FileStorage {
 
     private FileInputStream fis;
@@ -23,6 +26,11 @@ public class FileStorage {
 
     }
 
+    /**
+     * This reads the file into an ArrayList
+     * @param ticket - Ticket object. Each Ticket objects are combined to make the ArrayList
+     * @return myTicketList - the ArrayList of tickets read from the file
+     */
     public List<Ticket> FileRead(Ticket ticket) throws ClassNotFoundException {
         fis = null;
         ois = null;
@@ -45,6 +53,11 @@ public class FileStorage {
         return myTicketList;
     }
 
+    /**
+     * This writes the working ArrayList to the file
+     * @param myTicketList - The ArrayList of tickets modified by the main program to be written back to the file
+     *
+     */
     public void FileWrite(List myTicketList) throws FileNotFoundException, IOException {
         fos = null;
         oos = null;

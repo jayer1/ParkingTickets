@@ -36,59 +36,111 @@ public class Ticket implements Serializable {
         this.specialEvent = specialEvent;
     }
 
+    /**
+     * This is generic ticket constructor
+     */
     public Ticket() {
 
     }
 
+    /**
+     * Getter for vehicleID
+     * @returns vehicleID
+     */
     public int getVehicleID() {
         return vehicleID;
     }
 
+    /**
+     * Setter for vehicleID
+     * @param vehicleID
+     */
     public void setVehicleID(int vehicleID) {
         this.vehicleID = vehicleID;
     }
 
+    /**
+     * Getter for checkInHour
+     * @returns checkInHour
+     */
     public int getCheckInHour() {
         return checkInHour;
     }
 
+    /**
+     * Setter for checkInHour
+     * @param checkInHour
+     */
     public void setCheckInHour(int checkInHour) {
         this.checkInHour = checkInHour;
     }
 
+    /**
+     * Getter for checkOutHour
+     * @returns checkOutHour
+     */
     public int getCheckOutHour() {
         return checkOutHour;
     }
 
+    /**
+     * Setter for checkInHour
+     * @param checkOutHour
+     */
     public void setCheckOutHour(int checkOutHour) {
         this.checkOutHour = checkOutHour;
     }
 
+    /**
+     * Getter for amount
+     * @returns amount
+     */
     public double getAmount() {
         return amount;
     }
 
+    /**
+     * Setter for amount
+     * @param amount
+     */
     public void setAmount(double amount) {
         this.amount = amount;
     }
 
+    /**
+     * Getter for lostTicket
+     * @returns lostTicket
+     */
     public boolean getLostTicket() {
         return lostTicket;
     }
 
+    /**
+     * Setter for lostTicket
+     * @param lostTicket
+     */
     public void setLostTicket(boolean lostTicket) {
         this.lostTicket = lostTicket;
     }
-    
+
+    /**
+     * Getter for specialEvent
+     * @returns specialEvent
+     */
     public boolean getSpecialEvent() {
         return specialEvent;
     }
 
+    /**
+     * Setter for specialEvent
+     * @param specialEvent
+     */
     public void setSpecialEvent(boolean specialEvent) {
         this.specialEvent = specialEvent;
     }
 
-    public double calcAmount(int elapsedHours) { // SWITCHED FROM LONG ELAPSEDHOURS
+
+    public double calcAmount(int elapsedHours) {
         System.out.println("EEEEEHHHHH");
         double amount = 0;
         if (elapsedHours <= 3) {
@@ -103,6 +155,7 @@ public class Ticket implements Serializable {
             }
         }
         System.out.println("UGH for heaven's sake");
+
         return amount;
 
     }
